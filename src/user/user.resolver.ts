@@ -1,9 +1,7 @@
-import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql'
+import { Resolver, Query, Mutation, Args } from '@nestjs/graphql'
 import { UserService } from './user.service'
 import { User } from './user.type'
-import { Request } from 'express'
 import { RegisterDto } from './dto'
-import { BadRequestException } from '@nestjs/common'
 
 @Resolver()
 export class UserResolver {
@@ -19,10 +17,7 @@ export class UserResolver {
   }
 
   @Query(() => [User])
-  async searchUsers(
-    @Args('fullname') fullname: string,
-    @Context() context: { req: Request }
-  ) {
-    return this.userService.searchUsers(fullname)
+  async searchUsers(@Args('lastName') lastName: string) {
+    return this.userService.searchUsers(lastName)
   }
 }

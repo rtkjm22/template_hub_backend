@@ -14,13 +14,146 @@ datasource db {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  fullname  String
-  avatarUrl String?
-  email     String?     @unique
-  // emailVerifiedAt DateTime?
-  password  String?
-  // remenberToken   String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id            Int      @id @default(autoincrement())
+  lastName      String
+  firstName     String
+  lastNameKana  String
+  firstNameKana String
+  email         String   @unique
+  avatarUrl     String?
+  password      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  usersTeams  UsersTeams[]
+  template    Template[]
+  ChatMessage ChatMessage[]
+}
+
+model Team {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usersTeams UsersTeams[]
+  template   Template[]
+}
+
+model UsersTeams {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  teamId    Int
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@unique([userId, teamId]) // ユーザーとチームの組み合わせは一意
+}
+
+model Chat {
+  id         Int      @id @default(autoincrement())
+  templateId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  template    Template      @relation(fields: [templateId], references: [id])
+  ChatMessage ChatMessage[]
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  chatId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chat Chat @relation(fields: [chatId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Template {
+  id             Int      @id @default(autoincrement())
+  teamId         Int
+  templateTypeId Int
+  authorId       Int
+  isPublic       Boolean
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [authorId], references: [id])
+  team         Team         @relation(fields: [teamId], references: [id])
+  templateType TemplateType @relation(fields: [templateTypeId], references: [id])
+  Chat         Chat[]
+  Procedure    Procedure[]
+  Document     Document[]
+  Checklist    Checklist[]
+}
+
+model TemplateType {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  template Template[]
+}
+
+
+
+model Procedure {
+  id          Int     @id @default(autoincrement())
+  templateId  Int
+  title       String
+  description String?
+
+  template Template        @relation(fields: [templateId], references: [id])
+  steps    ProcedureStep[]
+}
+
+model ProcedureStep {
+  id          Int     @id @default(autoincrement())
+  procedureId Int
+  stepNumber  Int
+  title       String
+  description String?
+  attachments String?
+
+  procedure Procedure @relation(fields: [procedureId], references: [id])
+}
+
+model Document {
+  id          Int     @id @default(autoincrement())
+  templateId  Int
+  title       String
+  description String?
+  body        String?
+
+  template Template @relation(fields: [templateId], references: [id])
+}
+
+model Checklist {
+  id          Int     @id @default(autoincrement())
+  templateId  Int
+  title       String
+  description String?
+
+  template Template        @relation(fields: [templateId], references: [id])
+  items    ChecklistItem[]
+}
+
+model ChecklistItem {
+  id          Int     @id @default(autoincrement())
+  checklistId Int
+  itemNumber  Int
+  title       String
+  description String?
+  isRequired  Boolean
+
+  checklist Checklist @relation(fields: [checklistId], references: [id])
 }

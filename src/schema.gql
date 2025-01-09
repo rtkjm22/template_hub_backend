@@ -13,19 +13,26 @@ type Mutation {
 
 type Query {
   piyo: String!
-  searchUsers(fullname: String!): [User!]!
+  searchUsers(lastName: String!): [User!]!
 }
 
 input RegisterDto {
-  fullname: String!
+  email: String!
+  firstName: String!
+  firstNameKana: String!
+  lastName: String!
+  lastNameKana: String!
 }
 
 type User {
   avatarUrl: String
   createdAt: DateTime
-  email: String
-  fullname: String!
+  email: String!
+  firstName: String!
+  firstNameKana: String!
   id: Float
+  lastName: String!
+  lastNameKana: String!
   password: String
   updatedAt: DateTime
 }

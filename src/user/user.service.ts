@@ -15,11 +15,11 @@ export class UserService {
     return user
   }
 
-  async searchUsers(fullname: string) {
+  async searchUsers(lastName: string) {
     return this.prisma.user.findMany({
       where: {
-        fullname: {
-          contains: fullname
+        lastName: {
+          contains: lastName
         }
       }
     })

@@ -6,10 +6,18 @@ export class User {
   id?: number
 
   @Field()
-  fullname: string
+  lastName: string
 
-  @Field({ nullable: true })
-  email?: string
+  @Field()
+  firstName: string
+
+  @Field()
+  lastNameKana: string
+
+  @Field() firstNameKana: string
+
+  @Field()
+  email: string
 
   @Field({ nullable: true })
   avatarUrl?: string

@@ -75,7 +75,6 @@ const pubSub = new RedisPubSub({
             //   return { user }
             // },
             context: (req, res, connection) => {
-              // console.log("グラフQLのコンテキストですj：", req.res.req.cookies)
               if (connection) {
                 return {
                   req: connection.context.req,
