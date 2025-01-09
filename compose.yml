@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:10
+    container_name: template_hub_postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: rtkjm
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: template_hub
+    volumes:
+      - my_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+
+volumes:
+  my_postgres_data:
