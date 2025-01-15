@@ -1,5 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql'
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator'
 
 @InputType()
 export class RegisterDto {
@@ -27,4 +27,14 @@ export class RegisterDto {
   @IsNotEmpty({ message: '必須項目です。' })
   @IsEmail({}, { message: '不正なメール形式です。' })
   email: string
+
+  @Field()
+  @IsNotEmpty({ message: '必須項目です。' })
+  @MinLength(8, { message: '最低８文字以上入力してください。' })
+  password: string
+
+  @Field()
+  @IsNotEmpty({ message: '必須項目です。' })
+  @MinLength(8, { message: '最低８文字以上入力してください。' })
+  confirmPassword: string
 }
