@@ -9,6 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
 import { RedisPubSub } from 'graphql-redis-subscriptions'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { UserModule } from './user/user.module'
+import { AuthModule } from './auth/auth.module'
 
 const pubSub = new RedisPubSub({
   connection: {
@@ -91,7 +92,8 @@ const pubSub = new RedisPubSub({
     ConfigModule.forRoot({
       isGlobal: true
     }),
-    UserModule
+    UserModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService]
