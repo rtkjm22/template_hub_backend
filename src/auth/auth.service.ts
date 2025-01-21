@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma.service'
 import { ConfigService } from '@nestjs/config'
 import * as bcrypt from 'bcrypt'
-import { RegisterDto } from './dto'
+import { LoginDto, SigninDto } from './dto'
 import { User } from '@prisma/client'
 import { Response } from 'express'
 
@@ -15,9 +15,17 @@ export class AuthService {
     private prisma: PrismaService
   ) {}
 
-  async register(registerDto: RegisterDto, response: Response) {
+  async signin(signinDto: SigninDto, response: Response) {
+    const {
+      lastName,
+      firstName,
+      lastNameKana,
+      firstNameKana,
+      email,
+      password
+    } = signinDto
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: registerDto.email }
+      where: { email }
     })
 
     if (existingUser) {
@@ -26,10 +34,14 @@ export class AuthService {
       })
     }
     const salt = 10
-    const hashedPassword = await bcrypt.hash(registerDto.password, salt)
+    const hashedPassword = await bcrypt.hash(password, salt)
     const user = await this.prisma.user.create({
       data: {
-        ...registerDto,
+        lastName,
+        firstName,
+        lastNameKana,
+        firstNameKana,
+        email,
         password: hashedPassword
       }
     })
@@ -55,23 +67,47 @@ export class AuthService {
       expiresIn: '7d'
     })
 
-    response.cookie('access_token', accessToken, { httpOnly: true })
-    response.cookie('refresh_token', refreshToken, { httpOnly: true })
-
+    response.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 300 * 1000
+    })
+    response.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+    console.log(response.getHeaders())
     return { user }
   }
 
-  // async signIn(
-  //   username: string,
-  //   pass: string
-  // ): Promise<{ access_token: string }> {
-  //   const user = await this.usersService.findOne(username)
-  //   if (user?.password !== pass) {
-  //     throw new UnauthorizedException()
-  //   }
-  //   const payload = { sub: user.userId, username: user.username }
-  //   return {
-  //     access_token: await this.jwtService.signAsync(payload)
-  //   }
-  // }
+  async login(loginDto: LoginDto, response: Response) {
+    const user = await this.validateUser(loginDto)
+    if (!user) {
+      throw new BadRequestException({
+        invalidCredentials: 'ログイン情報に誤りがあります。'
+      })
+    }
+    return this.issueToken(user, response)
+  }
+
+  async validateUser(loginDto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: loginDto.email }
+    })
+
+    if (user && (await bcrypt.compare(loginDto.password, user.password))) {
+      return user
+    }
+    return null
+  }
+
+  async logout(response: Response) {
+    response.clearCookie('access_token')
+    response.clearCookie('refresh_token')
+    console.log('ログアウトが成功しました。')
+    return 'ログアウトが成功しました。'
+  }
 }

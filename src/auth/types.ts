@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql'
 import { User } from 'src/user/user.type'
 
 @ObjectType()
-export class RegisterResponse {
+export class SigninResponse {
   @Field(() => User, { nullable: true })
   user?: User
 }

@@ -7,8 +7,19 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input LoginDto {
+  email: String!
+  password: String!
+}
+
+type LoginResponse {
+  user: User!
+}
+
 type Mutation {
-  register(registerInput: RegisterDto!): RegisterResponse!
+  login(loginInput: LoginDto!): LoginResponse!
+  logout: String!
+  signin(signinInput: SigninDto!): SigninResponse!
 }
 
 type Query {
@@ -16,7 +27,7 @@ type Query {
   searchUsers(lastName: String!): [User!]!
 }
 
-input RegisterDto {
+input SigninDto {
   confirmPassword: String!
   email: String!
   firstName: String!
@@ -26,7 +37,7 @@ input RegisterDto {
   password: String!
 }
 
-type RegisterResponse {
+type SigninResponse {
   user: User
 }
 
