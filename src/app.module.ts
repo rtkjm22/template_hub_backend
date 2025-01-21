@@ -44,7 +44,7 @@ const pubSub = new RedisPubSub({
       serveRoot: '/'
     }),
     GraphQLModule.forRootAsync({
-      imports: [ConfigModule, AppModule],
+      imports: [ConfigModule, AppModule, UserModule, AuthModule],
       inject: [ConfigService],
       driver: ApolloDriver,
       useFactory: async () =>
@@ -91,9 +91,7 @@ const pubSub = new RedisPubSub({
     }),
     ConfigModule.forRoot({
       isGlobal: true
-    }),
-    UserModule,
-    AuthModule
+    })
   ],
   controllers: [AppController],
   providers: [AppService]
