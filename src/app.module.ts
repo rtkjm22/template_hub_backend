@@ -44,7 +44,7 @@ const pubSub = new RedisPubSub({
       serveRoot: '/'
     }),
     GraphQLModule.forRootAsync({
-      imports: [ConfigModule, AppModule],
+      imports: [ConfigModule, AppModule, UserModule, AuthModule],
       inject: [ConfigService],
       driver: ApolloDriver,
       useFactory: async () =>
@@ -77,23 +77,28 @@ const pubSub = new RedisPubSub({
             // },
             context: (req, res, connection) => {
               if (connection) {
+                // WebSocket サブスクリプションの場合
                 return {
-                  req: connection.context.req,
-                  res: connection.context.res,
-                  // user: connection.context.user,
-                  pubSub
+                  req: connection.context.req || null,
+                  res: connection.context.res || null,
+                  pubSub,
+                  // 必要に応じて追加の情報を設定
+                  user: connection.context.user || null
                 }
               }
-              return { req, res }
+              // 通常のHTTPリクエストの場合
+              // console.log('HTTPリクエストのreq:', req.req.headers)
+              console.log('=======================================')
+              console.log('HTTPリクエストのreq:', req.req.headers['cookie'])
+              console.log('=======================================')
+              return { req, res, pubSub }
             }
           }
         }
     }),
     ConfigModule.forRoot({
       isGlobal: true
-    }),
-    UserModule,
-    AuthModule
+    })
   ],
   controllers: [AppController],
   providers: [AppService]
