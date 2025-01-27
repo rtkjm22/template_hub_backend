@@ -12,3 +12,9 @@ export class LoginResponse {
   @Field(() => User)
   user: User
 }
+
+@ObjectType()
+export class UpdateTokenResponse {
+  @Field(() => User, { nullable: true })
+  user?: User
+}

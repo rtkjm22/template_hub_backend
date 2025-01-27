@@ -1,11 +1,15 @@
-import { Injectable, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException
+} from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { PrismaService } from 'src/prisma.service'
 import { ConfigService } from '@nestjs/config'
 import * as bcrypt from 'bcrypt'
 import { LoginDto, SigninDto } from './dto'
 import { User } from '@prisma/client'
-import { Response } from 'express'
+import { Request, Response } from 'express'
 
 @Injectable()
 export class AuthService {
@@ -48,6 +52,59 @@ export class AuthService {
     return this.issueToken(user, response)
   }
 
+  async login(loginDto: LoginDto, response: Response) {
+    const user = await this.validateUser(loginDto)
+    if (!user) {
+      throw new BadRequestException({
+        invalidCredentials: 'ログイン情報に誤りがあります。'
+      })
+    }
+    return this.issueToken(user, response)
+  }
+
+  async validateUser(loginDto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: loginDto.email }
+    })
+
+    if (user && (await bcrypt.compare(loginDto.password, user.password))) {
+      return user
+    }
+    return null
+  }
+
+  async logout(response: Response) {
+    response.clearCookie('access_token')
+    response.clearCookie('refresh_token')
+    console.log('ログアウトが成功しました。')
+    return 'ログアウトが成功しました。'
+  }
+
+  async updateToken(req: Request, response: Response) {
+    const refreshToken = req.cookies['refresh_token']
+    if (!refreshToken)
+      throw new UnauthorizedException('リフレッシュトークンが見つかりません。')
+    let payload
+
+    try {
+      payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET')
+      })
+    } catch (e) {
+      console.log(e)
+      throw new UnauthorizedException(
+        'リフレッシュトークンが有効期限切れか不正な値です。'
+      )
+    }
+    const userExists = await this.prisma.user.findUnique({
+      where: { id: payload.sub }
+    })
+    if (!userExists) {
+      throw new BadRequestException('ユーザーが存在しません。')
+    }
+    return this.issueToken(userExists, response)
+  }
+
   private async issueToken(user: User, response: Response) {
     const payload = {
       username: `${user.lastName}${user.firstName}${user.email}`,
@@ -80,33 +137,5 @@ export class AuthService {
       maxAge: 7 * 24 * 60 * 60 * 1000
     })
     return { user }
-  }
-
-  async login(loginDto: LoginDto, response: Response) {
-    const user = await this.validateUser(loginDto)
-    if (!user) {
-      throw new BadRequestException({
-        invalidCredentials: 'ログイン情報に誤りがあります。'
-      })
-    }
-    return this.issueToken(user, response)
-  }
-
-  async validateUser(loginDto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: loginDto.email }
-    })
-
-    if (user && (await bcrypt.compare(loginDto.password, user.password))) {
-      return user
-    }
-    return null
-  }
-
-  async logout(response: Response) {
-    response.clearCookie('access_token')
-    response.clearCookie('refresh_token')
-    console.log('ログアウトが成功しました。')
-    return 'ログアウトが成功しました。'
   }
 }

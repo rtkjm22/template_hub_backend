@@ -25,6 +25,7 @@ type Mutation {
 type Query {
   piyo: String!
   searchUsers(lastName: String!): [User!]!
+  updateToken: UpdateTokenResponse!
 }
 
 input SigninDto {
@@ -38,6 +39,10 @@ input SigninDto {
 }
 
 type SigninResponse {
+  user: User
+}
+
+type UpdateTokenResponse {
   user: User
 }
 

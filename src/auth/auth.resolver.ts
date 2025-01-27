@@ -1,6 +1,6 @@
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { AuthService } from './auth.service'
-import { SigninResponse, LoginResponse } from './types'
+import { SigninResponse, LoginResponse, UpdateTokenResponse } from './types'
 import { LoginDto, SigninDto } from './dto'
 import { BadRequestException, UseFilters } from '@nestjs/common'
 import { Request } from 'express'
@@ -36,5 +36,14 @@ export class AuthResolver {
   @Mutation(() => String)
   async logout(@Context() context: { req: Request }) {
     return this.authService.logout(context.req.res)
+  }
+
+  @Query(() => UpdateTokenResponse)
+  async updateToken(@Context() context: { req: Request }) {
+    try {
+      return await this.authService.updateToken(context.req, context.req.res)
+    } catch (error) {
+      throw new BadRequestException(error.message)
+    }
   }
 }
